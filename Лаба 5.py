@@ -1,18 +1,11 @@
-#Задание состоит из двух частей. 
-#1 часть – написать программу в соответствии со своим вариантом задания. Написать 2 варианта формирования (алгоритмический и с помощью функций Питона), сравнив по времени их выполнение.
-#2 часть – усложнить написанную программу, введя по своему усмотрению в условие минимум одно ограничение на характеристики объектов (которое будет сокращать количество переборов) и целевую функцию для нахождения оптимального  решения.
-#Вариант 31. Составьте все возможные К разрядные восьмеричные целые числа из нечетных цифр.
-
 import timeit #модуль для замера времени выполнения кода.
 from itertools import product #функция для генерации декартова произведения (всех возможных комбинаций элементов)
-
 ### 1 часть
 ##Алгоритмический метод (без itertools)
 def algorithmic_method(K):
-    nechet = '1357'  # Нечётные восьмеричные цифры
     result = ['']     # Начинаем с пустой строки
     for _ in range(K):  # Повторяем K раз (по числу разрядов)
-        result = [num + d for num in result for d in nechet]  # Добавляем каждую цифру к каждой строке
+        result = [num + d for num in result for d in '1357']  # Добавляем каждую цифру к каждой строке, '1357' - восьмеричные числа
     return result
 
 ##функции питона
@@ -25,29 +18,22 @@ print("Алгоритмический метод:", algorithmic_method(K)[:10]) 
 print("Метод с itertools:", python_method(K)[:10])
 
 print("\nСравнение скорости:")
-print("Алгоритмический:", timeit.timeit(lambda: algorithmic_method(K), number=1000)) #замеряет время 1000 выполнений функции.
-print("itertools:", timeit.timeit(lambda: python_method(K), number=1000))
+print("Алгоритмический:", timeit.timeit(lambda: algorithmic_method(K), number=1000), " itertools:", timeit.timeit(lambda: python_method(K), number=1000)) #замеряет время 1000 выполнений функции.
 
 ### 2 часть
 def optimized_method(K, max_sum):
-    nechet = '1357'
-    numbers = []
-    
-    for num in product(nechet, repeat=K):  # Перебираем все комбинации
-        num_str = ''.join(num)            # Объединяем в строку (например, '135')
-        summ = sum(int(d) for d in num_str)  # Считаем сумму цифр
-        if summ <= max_sum:           # Если сумма <= ограничению
-            numbers.append((num_str, summ))  # Добавляем в список
-    
-    return numbers
+    nums = [(''.join(p), sum(int(d) for d in p)) for p in product('1357', repeat=K) if sum(int(d) for d in p) <= max_sum]
+    # Генерируем список кортежей (число, сумма цифр) для чисел, где сумма <= max_sum
+    return max(nums, key=lambda x: x[1]) if nums else None
+    # Возвращаем число с максимальной суммой цифр или None, если нет подходящих чисел
+    #max(numbers, key=lambda x: x[1]) — находит число с максимальной суммой цифр.
 
-K = 3
-max_sum = 12
-numberss = optimized_method(K, max_sum)
 
-if numberss:
-    optimal = max(numberss, key=lambda x: x[1])  # Находим число с макс. суммой
-    print(f"\nОптимальное число: {optimal[0]} (сумма цифр: {optimal[1]})")
-else:
-    print("Нет подходящих чисел")
+K, max_sum = 3, 12
+
+# Находим оптимальное число
+optimal = optimized_method(K, max_sum)
+
+# Выводим результат (если он есть) или сообщение об отсутствии подходящих чисел
+print(f"\nОптимальное: {optimal[0]} (сумма: {optimal[1]})" if optimal else "Нет чисел")
 
